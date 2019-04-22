@@ -1,0 +1,211 @@
+data=normrnd(0,1,2,1000);
+data1=data;
+data2=data;
+p1=[(sqrt(2))/2
+    (sqrt(2))/2];
+p2=[-(sqrt(2))/2
+     (sqrt(2))/2];
+p3=[-(sqrt(2))/2
+     (sqrt(2))/2];
+p4=[-(sqrt(2))/2
+    -(sqrt(2))/2];
+A=[p1,p2]*[3,0;0,1];
+A1=[p3,p4]*[3,0;0,1];
+yy=A*data;
+yy1=A*data1;
+yy2=A1*data2;
+yy1(1,:)=yy1(1,:)+16;
+yy1(2,:)=yy1(2,:)+7;
+yy2(1,:)=yy2(1,:)+7;
+yy2(2,:)=yy2(2,:)+5;
+dataall=[yy,yy1,yy2];
+K=3;
+center=zeros(2,3);
+center(:,1)=dataall(:,500);
+center(:,2)=dataall(:,1000);
+center(:,3)=dataall(:,3000);
+A1=[];
+A2=[];
+A3=[];
+A4=[];
+A5=[];
+A6=[];
+for a=1:1:300
+    for i=1:1:3000
+        if((norm(center(:,1)-dataall(:,i))<norm(center(:,2)-dataall(:,i)))&(norm(center(:,1)-dataall(:,i))<norm(center(:,3)-dataall(:,i))))
+            A1=[A1;dataall(1,i)];
+            A2=[A2;dataall(2,i)];
+        end
+        if((norm(center(:,2)-dataall(:,i))<norm(center(:,1)-dataall(:,i)))&(norm(center(:,2)-dataall(:,i))<norm(center(:,3)-dataall(:,i))))
+            A3=[A3;dataall(1,i)];
+            A4=[A4;dataall(2,i)];
+        end
+        if((norm(center(:,3)-dataall(:,i))<=norm(center(:,1)-dataall(:,i)))&(norm(center(:,3)-dataall(:,i))<=norm(center(:,2)-dataall(:,i))))
+            A5=[A5;dataall(1,i)];
+            A6=[A6;dataall(2,i)];
+        end
+    end
+    center(1,1)=sum(sum(A1))/length(A1);
+    center(2,1)=sum(sum(A2))/length(A2);
+    center(1,2)=sum(sum(A3))/length(A3);
+    center(2,2)=sum(sum(A4))/length(A4);
+    center(1,3)=sum(sum(A5))/length(A5);
+    center(2,3)=sum(sum(A6))/length(A6);
+    if (a<300)
+    A1=[];
+    A2=[];
+    A3=[];
+    A4=[];
+    A5=[];
+    A6=[];
+    end
+end
+u=zeros(2,3);
+u=center;
+a=zeros(3,1);
+a(1,1)=length(A1)/length(dataall);
+a(2,1)=length(A3)/length(dataall);
+a(3,1)=length(A5)/length(dataall);
+sigma1=zeros(2,2);
+sigma11=zeros(1,length(A1));
+sigma11=A1'-u(1,1);
+sigma12=zeros(1,length(A2));
+sigma12=A2'-u(2,1);
+sigma1zuhe=zeros(2,length(A1));
+sigma1zuhe=[sigma11;sigma12];
+sigma1=(sigma1zuhe*(sigma1zuhe'))/(length(A1)-1);
+sigma2=zeros(2,2);
+sigma21=zeros(1,length(A3));
+sigma21=A3'-u(1,2);
+sigma22=zeros(1,length(A4));
+sigma22=A4'-u(2,2);
+sigma2zuhe=zeros(2,length(A3));
+sigma2zuhe=[sigma21;sigma22];
+sigma2=(sigma2zuhe*(sigma2zuhe'))/(length(A3)-1);
+sigma3=zeros(2,2);
+sigma31=zeros(1,length(A5));
+sigma31=A5'-u(1,3);
+sigma32=zeros(1,length(A6));
+sigma32=A6'-u(2,3);
+sigma3zuhe=zeros(2,length(A5));
+sigma3zuhe=[sigma31;sigma32];
+sigma3=(sigma3zuhe*(sigma3zuhe'))/(length(A5)-1);
+D1=zeros(2,2);
+D2=zeros(2,2);
+D3=zeros(2,2);
+D1=inv(sigma1);
+D2=inv(sigma2);
+D3=inv(sigma3);
+for b=1:1:300
+    rji=zeros(3,3000);
+    for j=1:1:3000
+        rji(1,j)=a(1,1)*exp((-1/2)*((dataall(:,j)-u(:,1))')*D1*(dataall(:,j)-u(:,1)))/(a(1,1)*exp((-1/2)*((dataall(:,j)-u(:,1))')*D1*(dataall(:,j)-u(:,1)))+a(2,1)*exp((-1/2)*((dataall(:,j)-u(:,2))')*D2*(dataall(:,j)-u(:,2)))+a(3,1)*exp((-1/2)*((dataall(:,j)-u(:,3))')*D3*(dataall(:,j)-u(:,3))));
+        rji(2,j)=a(2,1)*exp((-1/2)*((dataall(:,j)-u(:,2))')*D2*(dataall(:,j)-u(:,2)))/(a(1,1)*exp((-1/2)*((dataall(:,j)-u(:,1))')*D1*(dataall(:,j)-u(:,1)))+a(2,1)*exp((-1/2)*((dataall(:,j)-u(:,2))')*D2*(dataall(:,j)-u(:,2)))+a(3,1)*exp((-1/2)*((dataall(:,j)-u(:,3))')*D3*(dataall(:,j)-u(:,3))));
+        rji(3,j)=a(3,1)*exp((-1/2)*((dataall(:,j)-u(:,3))')*D3*(dataall(:,j)-u(:,3)))/(a(1,1)*exp((-1/2)*((dataall(:,j)-u(:,1))')*D1*(dataall(:,j)-u(:,1)))+a(2,1)*exp((-1/2)*((dataall(:,j)-u(:,2))')*D2*(dataall(:,j)-u(:,2)))+a(3,1)*exp((-1/2)*((dataall(:,j)-u(:,3))')*D3*(dataall(:,j)-u(:,3))));
+    end
+    rxxiangcheng1=zeros(2,3000);
+    for j1=1:1:3000
+        rxxiangcheng1(:,j1)=rji(1,j1)*dataall(:,j1);
+    end
+    rxxiangcheng2=zeros(2,3000);
+    for j2=1:1:3000
+        rxxiangcheng2(:,j2)=rji(2,j2)*dataall(:,j2);
+    end
+    rxxiangcheng3=zeros(2,3000);
+    for j3=1:1:3000
+        rxxiangcheng3(:,j3)=rji(3,j3)*dataall(:,j3);
+    end   
+    rxqiuhe1=zeros(2,1);
+    rxqiuhe1=sum(rxxiangcheng1,2);
+    rxqiuhe2=zeros(2,1);
+    rxqiuhe2=sum(rxxiangcheng2,2);
+    rxqiuhe3=zeros(2,1);
+    rxqiuhe3=sum(rxxiangcheng3,2);
+    rqiuhe=zeros(3,1);
+    rqiuhe=sum(rji,2);
+    u(:,1)=rxqiuhe1/(rqiuhe(1,1));
+    u(:,2)=rxqiuhe2/(rqiuhe(2,1));
+    u(:,3)=rxqiuhe3/(rqiuhe(3,1));
+    a(1,1)=rqiuhe(1,1)/3000;
+    a(2,1)=rqiuhe(2,1)/3000;
+    a(3,1)=rqiuhe(3,1)/3000;
+    for jj1=1:1:3000
+        xiefangcha1=zeros(4,3000);
+        xiefangcha1(1,jj1)=rji(1,jj1)*(dataall(1,j)-u(1,1))*(dataall(1,j)-u(1,1));
+        xiefangcha1(2,jj1)=rji(1,jj1)*(dataall(1,j)-u(1,1))*(dataall(2,j)-u(2,1));
+        xiefangcha1(3,jj1)=rji(1,jj1)*(dataall(2,j)-u(2,1))*(dataall(1,j)-u(1,1));
+        xiefangcha1(4,jj1)=rji(1,jj1)*(dataall(2,j)-u(2,1))*(dataall(2,j)-u(2,1));
+    end
+    xiefangchaqiuhe1=zeros(4,1);
+    xiefangchaqiuhe1=sum(xiefangcha1,2);
+    xiefangchazhengchang1=zeros(2,2);
+    xiefangchazhengchang1(1,1)=xiefangchaqiuhe1(1,1);
+    xiefangchazhengchang1(1,2)=xiefangchaqiuhe1(2,1);
+    xiefangchazhengchang1(2,1)=xiefangchaqiuhe1(3,1);
+    xiefangchazhengchang1(2,2)=xiefangchaqiuhe1(4,1);
+    sigma1=xiefangchazhengchang1/(rqiuhe(1,1));
+    for jj2=1:1:3000
+        xiefangcha2=zeros(4,3000);
+        xiefangcha2(1,jj2)=rji(2,jj2)*(dataall(1,j)-u(1,2))*(dataall(1,j)-u(1,2));
+        xiefangcha2(2,jj2)=rji(2,jj2)*(dataall(1,j)-u(1,2))*(dataall(2,j)-u(2,2));
+        xiefangcha2(3,jj2)=rji(2,jj2)*(dataall(2,j)-u(2,2))*(dataall(1,j)-u(1,2));
+        xiefangcha2(4,jj2)=rji(2,jj2)*(dataall(2,j)-u(2,2))*(dataall(2,j)-u(2,2));
+    end
+    xiefangchaqiuhe2=zeros(4,1);
+    xiefangchaqiuhe2=sum(xiefangcha2,2);
+    xiefangchazhengchang2=zeros(2,2);
+    xiefangchazhengchang2(1,1)=xiefangchaqiuhe2(1,1);
+    xiefangchazhengchang2(1,2)=xiefangchaqiuhe2(2,1);
+    xiefangchazhengchang2(2,1)=xiefangchaqiuhe2(3,1);
+    xiefangchazhengchang2(2,2)=xiefangchaqiuhe2(4,1);
+    sigma2=xiefangchazhengchang2/(rqiuhe(2,1));
+    for jj3=1:1:3000
+        xiefangcha3=zeros(4,3000);
+        xiefangcha3(1,jj3)=rji(3,jj3)*(dataall(1,j)-u(1,3))*(dataall(1,j)-u(1,3));
+        xiefangcha3(2,jj3)=rji(3,jj3)*(dataall(1,j)-u(1,3))*(dataall(2,j)-u(2,3));
+        xiefangcha3(3,jj3)=rji(3,jj3)*(dataall(2,j)-u(2,3))*(dataall(1,j)-u(1,3));
+        xiefangcha3(4,jj3)=rji(3,jj3)*(dataall(2,j)-u(2,3))*(dataall(2,j)-u(2,3));
+    end
+    xiefangchaqiuhe3=zeros(4,1);
+    xiefangchaqiuhe3=sum(xiefangcha3,2);
+    xiefangchazhengchang3=zeros(2,2);
+    xiefangchazhengchang3(1,1)=xiefangchaqiuhe3(1,1);
+    xiefangchazhengchang3(1,2)=xiefangchaqiuhe3(2,1);
+    xiefangchazhengchang3(2,1)=xiefangchaqiuhe3(3,1);
+    xiefangchazhengchang3(2,2)=xiefangchaqiuhe3(4,1);
+    sigma3=xiefangchazhengchang3/(rqiuhe(3,1));
+end
+C1=[];
+C2=[];
+C3=[];
+C4=[];
+C5=[];
+C6=[];
+for q=1:1:3000
+    if((rji(1,q)>=rji(2,q))&(rji(1,q)>rji(3,q)))
+        C1=[C1;dataall(1,q)];
+        C2=[C2;dataall(2,q)];
+    end
+    if((rji(2,q)>rji(1,q))&(rji(2,q)>rji(3,q)))
+        C3=[C3;dataall(1,q)];
+        C4=[C4;dataall(2,q)];
+    end
+    if((rji(3,q)>=rji(1,q))&(rji(3,q)>=rji(2,q)))
+        C5=[C5;dataall(1,q)];
+        C6=[C6;dataall(2,q)];
+    end
+end
+figure (1)
+hold on
+plot(A1,A2,'ro');
+hold on;
+plot(A3,A4,'ko');
+hold on;
+plot(A5,A6,'*');
+figure (2)
+hold on
+plot(C1,C2,'ro');
+hold on;
+plot(C3,C4,'ko');
+hold on;
+plot(C5,C6,'*');
